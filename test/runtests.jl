@@ -1,4 +1,4 @@
-using Revise
+# using Revise
 using Random
 using StatsFuns
 using Optim
@@ -7,36 +7,36 @@ using LinearAlgebra
 using ForwardDiff
 using DataFrames
 using Distributions
+using BenchmarkTools: @btime
 
 using rcmnl
 
 Random.seed!(1234)
 
+# dim of data
 nindv = 1_000
 nt    = 20
 
-β1 = [1.0, -2.0,]
-β2 = [1.0,  0.5]
-
+# coefs
+β = [ 1.0  0.3;
+     -2.0  0.0;
+      0.0  1.0;
+      0.2  0.5]
 # cholesky decomposition of Σ
 Σchol = [1.0 0.0;
          0.5 0.5]
-θtrue = vcat(β1, β2, Σchol[:,1], Σchol[end])
+θtrue = vcat(vec(β), Σchol[:,1], Σchol[end])
 
-k = length(β1)
-X1 = randn(nt, nindv, k)
-X2 = randn(nt, nindv, k)
+# generate X and V
+k = size(β,1)
+X = randn(nt, nindv, k)
 V = randn(nindv,2)*Σchol' # need Σchol b/c usu. assume U is a 2-dim vector
 
 # utilities
 U = zeros(3, nt, nindv)
-U0 = view(U,1, :,:)
-U1 = view(U,2, :,:)
-U2 = view(U,3, :,:)
-mul!(vec(U1), reshape(X1, :, k), β1)
-mul!(vec(U2), reshape(X2, :, k), β2)
-U1 .+= V[:,1]'
-U2 .+= V[:,2]'
+mul!(reshape(view(U,2:3,:,:), 2,:), β', reshape(X, :, k)')
+U[2,:,:] .+= V[:,1]'
+U[3,:,:] .+= V[:,2]'
 
 # probabilities
 PrU = mapslices(softmax, U; dims=1)
@@ -50,28 +50,42 @@ for idx in CartesianIndices(y)
     y[idx] = searchsortedfirst(vw, rand())
 end
 
+# how many of each choice?
 countmap(vec(y))
 
-simlogL(y, X1, X2, θtrue)
+# run function once
+simlogL(y, X, θtrue)
 
-f(θ) = simlogL(y, X1, X2, θ)
-theta0 = vcat(β1, β2, Σchol[:,1], Σchol[end]) .* 2
+# wrapper for optimizer
+f(θ) = simlogL(y, X, θ)
+
+# starting value
+theta0 = vcat(vec(β), Σchol[:,1], Σchol[end]) .* 2
+
+# time function
 @btime f(theta0)
-@profview f(theta0)
 
+# profile function
+# @profileview f(theta0)
+
+# optimize
 res = optimize(f, theta0, BFGS(), Optim.Options(;show_trace=true), autodiff=:forward)
 
+# get results
 thetahat = res.minimizer
 H = ForwardDiff.hessian(f, thetahat)
 se = sqrt.(diag(inv(H)))
+pval = 2*normcdf.(-abs.(thetahat./se))
 
+# nice table
 results_to_print = DataFrame(
     θtrue = θtrue,
     θhat = thetahat,
     se = se,
-    pval = 2*normcdf.(-abs.(thetahat./se))
+    pval = pval
 )
 
+# Wald test
 alpha_reject = 0.001
 wald_test_stat = (thetahat - θtrue)' * (H \ (thetahat - θtrue))
 wald_test_p = ccdf(Chisq(length(θtrue)), wald_test_stat)
@@ -80,3 +94,5 @@ if wald_test_p < alpha_reject
 else
     println("We fail to reject our estimate!!")
 end
+
+@assert wald_test_p > alpha_reject

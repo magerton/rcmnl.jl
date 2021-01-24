@@ -24,11 +24,10 @@ end
 # Multidim quad
 # https://gist.github.com/markvdw/f9ca12c99484cf2a881e84cb515b86c8
 "simulated logL of data using `npts` quadrature points"
-function simlogL(y, X1, X2, θ::AbstractVector{T}; npts=15) where {T}
+function simlogL(y, X, θ::AbstractVector{T}; npts=15) where {T}
     
     # unpack parameters
-    β1 = view(θ, 1:2)
-    β2 = view(θ, 3:4)
+    β = reshape(view(θ, 1:8), :, 2)
     Σchol = SMatrix{2,2}(θ[end-2], θ[end-1], 0, θ[end])
 
     # for quadrature
@@ -46,8 +45,7 @@ function simlogL(y, X1, X2, θ::AbstractVector{T}; npts=15) where {T}
     for j in 1:size(y,2)
         
         # mean utilities of inside good
-        @views mul!(u[1,:], X1[:,j,:], β1)
-        @views mul!(u[2,:], X2[:,j,:], β2)
+        @views mul!(u, β', X[:,j,:]')
 
         for (i, ((v1,w1), (v2,w2))) in enumerate(quadprod)
 
