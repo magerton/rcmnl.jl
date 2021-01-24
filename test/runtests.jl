@@ -59,7 +59,7 @@ end
 countmap(vec(y))
 
 # run function once
-@btime simlogL(y, X, θtrue; npts=nquadpts)
+simlogL(y, X, θtrue; npts=nquadpts)
 println("It runs!")
 
 # wrapper for optimizer
@@ -90,6 +90,7 @@ results_to_print = DataFrame(
     se = se,
     pval = pval
 )
+@show results_to_print
 
 # Wald test
 alpha_reject = 0.001
