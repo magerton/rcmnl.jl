@@ -9,9 +9,13 @@ using StatsFuns: sqrt2
 
 export simlogL
 
+const AV = AbstractVector
+const AM = AbstractMatrix
+
 "log lik of choices yᵢ conditional on mean inside good utilities uᵢ and shock eₖ"
-function logLi!(tmp, y, u, e)
-    logL = zero(eltype(tmp))
+function logLi!(tmp::Vector{T}, y::AV, u::AM, e::AV) where {T}
+    length(y) == size(u,2) || throw(DimensionMismatch())
+    logL = zero(T)
     tmp[1] = 0
     for j = 1:size(u,2)
         tmp[2:end] .= view(u,:,j) .+ e
@@ -21,8 +25,7 @@ function logLi!(tmp, y, u, e)
     return logL
 end
 
-# Multidim quad
-# https://gist.github.com/markvdw/f9ca12c99484cf2a881e84cb515b86c8
+
 "simulated logL of data using `npts` quadrature points"
 function simlogL(y, X, θ::AbstractVector{T}; npts=15) where {T}
     
@@ -30,7 +33,9 @@ function simlogL(y, X, θ::AbstractVector{T}; npts=15) where {T}
     β = reshape(view(θ, 1:8), :, 2)
     Σchol = SMatrix{2,2}(θ[end-2], θ[end-1], 0, θ[end])
 
-    # for quadrature
+    # zip together vectors of nodes + weights for Multidim quad
+    # and take cartesian product
+    # https://gist.github.com/markvdw/f9ca12c99484cf2a881e84cb515b86c8
     vw = zip(gausshermite(npts)...)
     quadprod = product(vw, vw)
 
@@ -47,13 +52,17 @@ function simlogL(y, X, θ::AbstractVector{T}; npts=15) where {T}
         # mean utilities of inside good
         @views mul!(u, β', X[:,j,:]')
 
+        # loop over cartesian product of quadrature wts/nodes
+        # (don't have to expand these)
         for (i, ((v1,w1), (v2,w2))) in enumerate(quadprod)
 
             # transform iid vₖ normal to correlatd eₖ
+            # using StaticArrays b/c this allocates less
+            # probably unecessary
             v = SVector(v1,v2)
             e = sqrt2 .* Σchol * v
             
-            # quad weight wₖ * π*N/2
+            # quadrature weight wₖ * π*N/2
             w = w1*w2*π
 
             # log( wₖ * likᵢ conditional on eₖ)

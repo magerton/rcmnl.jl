@@ -1,8 +1,10 @@
-# using Revise
+# using Revise # uncomment for development
+
+using Test
 using Random
 using StatsFuns
 using Optim
-using StatsBase
+using StatsBase: countmap
 using LinearAlgebra
 using ForwardDiff
 using DataFrames
@@ -14,21 +16,24 @@ using rcmnl
 Random.seed!(1234)
 
 # dim of data
-nindv = 1_000
-nt    = 20
+nindv    = 1_000
+nt       = 20
+nquadpts = 7
 
 # coefs
 β = [ 1.0  0.3;
      -2.0  0.0;
       0.0  1.0;
       0.2  0.5]
+k, nchoice = size(β)
+@assert nchoice == 2
+
 # cholesky decomposition of Σ
 Σchol = [1.0 0.0;
          0.5 0.5]
 θtrue = vcat(vec(β), Σchol[:,1], Σchol[end])
 
 # generate X and V
-k = size(β,1)
 X = randn(nt, nindv, k)
 V = randn(nindv,2)*Σchol' # need Σchol b/c usu. assume U is a 2-dim vector
 
@@ -54,10 +59,11 @@ end
 countmap(vec(y))
 
 # run function once
-simlogL(y, X, θtrue)
+@btime simlogL(y, X, θtrue; npts=nquadpts)
+println("It runs!")
 
 # wrapper for optimizer
-f(θ) = simlogL(y, X, θ)
+f(θ) = simlogL(y, X, θ; npts=nquadpts)
 
 # starting value
 theta0 = vcat(vec(β), Σchol[:,1], Σchol[end]) .* 2
@@ -65,7 +71,7 @@ theta0 = vcat(vec(β), Σchol[:,1], Σchol[end]) .* 2
 # time function
 @btime f(theta0)
 
-# profile function
+# profile function in IDE
 # @profileview f(theta0)
 
 # optimize
@@ -95,4 +101,4 @@ else
     println("We fail to reject our estimate!!")
 end
 
-@assert wald_test_p > alpha_reject
+@test wald_test_p > alpha_reject
