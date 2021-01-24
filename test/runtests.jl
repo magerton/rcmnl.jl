@@ -4,6 +4,9 @@ using StatsFuns
 using Optim
 using StatsBase
 using LinearAlgebra
+using ForwardDiff
+using DataFrames
+using Distributions
 
 using rcmnl
 
@@ -14,8 +17,11 @@ nt    = 20
 
 β1 = [1.0, -2.0,]
 β2 = [1.0,  0.5]
+
+# cholesky decomposition of Σ
 Σchol = [1.0 0.0;
          0.5 0.5]
+θtrue = vcat(β1, β2, Σchol[:,1], Σchol[end])
 
 k = length(β1)
 X1 = randn(nt, nindv, k)
@@ -46,7 +52,7 @@ end
 
 countmap(vec(y))
 
-simlogL(y, X1, X2, vcat(β1, β2, Σchol[:,1], Σchol[end]))
+simlogL(y, X1, X2, θtrue)
 
 f(θ) = simlogL(y, X1, X2, θ)
 theta0 = vcat(β1, β2, Σchol[:,1], Σchol[end]) .* 2
@@ -55,5 +61,22 @@ theta0 = vcat(β1, β2, Σchol[:,1], Σchol[end]) .* 2
 
 res = optimize(f, theta0, BFGS(), Optim.Options(;show_trace=true), autodiff=:forward)
 
+thetahat = res.minimizer
+H = ForwardDiff.hessian(f, thetahat)
+se = sqrt.(diag(inv(H)))
 
+results_to_print = DataFrame(
+    θtrue = θtrue,
+    θhat = thetahat,
+    se = se,
+    pval = 2*normcdf.(-abs.(thetahat./se))
+)
 
+alpha_reject = 0.001
+wald_test_stat = (thetahat - θtrue)' * (H \ (thetahat - θtrue))
+wald_test_p = ccdf(Chisq(length(θtrue)), wald_test_stat)
+if wald_test_p < alpha_reject
+    println("Reject that we got the right answer")
+else
+    println("We fail to reject our estimate!!")
+end
