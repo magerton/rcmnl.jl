@@ -51,4 +51,4 @@ Contains 2 examples:
         ```julia
         ]add DifferentialEquations Plots
         ```
-    - Open `[ivp-plotting-example.jl](./ivp-plotting-example.jl)`
+    - Open [ivp-plotting-example.jl](./ivp-plotting-example.jl)
