@@ -13,7 +13,9 @@ begin
 	using Distributions
 	using DataFrames
 	using StatsBase: countmap
-	using ForwardDiff # autodiff instead of finite diff?
+	
+	# autodiff instead of finite diff?
+	using FiniteDiff: finite_difference_gradient
 end
 
 # ╔═╡ 0ece0030-5e9d-11eb-0092-254fc6e72e83
@@ -156,7 +158,11 @@ theta0 = zeros(k)
 
 # ╔═╡ ba5f02b0-5e9c-11eb-2221-4b0d5e525673
 # Check gradient against autodiff
-@assert ForwardDiff.gradient(f, theta0) ≈ dloglik(y,X,theta0)
+begin
+	fdgrad = finite_difference_gradient(f, theta0, Val{:central})
+	@assert  fdgrad ≈ dloglik(y,X,theta0)
+	fdgrad .- dloglik(y,X,theta0)
+end
 
 # ╔═╡ ba614ca0-5e9c-11eb-3619-0507168a18d6
 res = optimize(f, g!, theta0, BFGS(), Optim.Options(;show_trace=true))
