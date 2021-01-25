@@ -4,13 +4,15 @@ using StatsFuns: logsumexp
 using Base.Iterators: product
 using FastGaussQuadrature: gausshermite
 using StaticArrays
-using LinearAlgebra: mul!
-using StatsFuns: sqrt2
+using LinearAlgebra: mul!, checksquare
+using StatsFuns: sqrt2, sqrtπ, invsqrt2π, invπ
 
 export simlogL
 
 const AV = AbstractVector
 const AM = AbstractMatrix
+
+include("integration.jl")
 
 "log lik of choices yᵢ conditional on mean inside good utilities uᵢ and shock eₖ"
 function logLi!(tmp::Vector{T}, y::AV, u::AM, e::AV) where {T}
@@ -72,7 +74,7 @@ function simlogL(y, X, θ::AbstractVector{T}; npts=15) where {T}
         # compute ∑ wtₖ * likₖ
         sll += logsumexp(lse)
     end
-    return -sll
+    return - invπ * sll
 end
 
 

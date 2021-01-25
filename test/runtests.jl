@@ -13,6 +13,17 @@ using BenchmarkTools: @btime
 
 using rcmnl
 
+@testset "Gauss Hermite integration" begin
+    @test rcmnl.integrate_wrt_normal_pdf(x -> x, 1.23, 2.34; npts=15) ≈ 1.23
+    @test sqrt(rcmnl.integrate_wrt_normal_pdf(x -> (x-1.23)^2, 1.23, 2.34; npts=15)) ≈ 2.34
+
+    μ = [1.0, 0.5]
+    L = [1.0  0.0; 0.7 0.3]
+
+    @test rcmnl.integrate_wrt_normal_pdf(x -> (x-μ)*(x-μ)', μ, L; npts=7) ≈ L*L'
+    @test rcmnl.integrate_wrt_normal_pdf(x -> x,            μ, L; npts=7) ≈ μ
+end
+
 Random.seed!(1234)
 
 # dim of data
