@@ -52,12 +52,6 @@ softmax        # exp(x_i) / sum(exp(x)), for i
 ```
 "
 
-# ╔═╡ 75c48830-5e9e-11eb-1ec1-f3a083780a1b
-begin
-	const AV = AbstractVector
-	const AM = AbstractMatrix;
-end
-
 # ╔═╡ b9c02010-5e9b-11eb-1e5d-9358c778cbba
 seed!(1234)
 
@@ -93,7 +87,8 @@ y = [searchsortedfirst(row, rand()) for row in eachrow(cum_prob) ] .-1
 countmap(y)
 
 # ╔═╡ 73a5d8d0-5e9c-11eb-31ee-5322c7f27f1e
-function checksizes(y,X,theta)
+function checksizes(y, X, theta)
+	@assert eltype(y) <: Integer
     n,k = size(X)
     n == length(y) || throw(DimensionMismatch())
     k == length(theta) || throw(DimensionMismatch())
@@ -101,7 +96,7 @@ function checksizes(y,X,theta)
 end
 
 # ╔═╡ 90b963b0-5e9c-11eb-3e39-bdf160b8655e
-function loglik(y::AV{Int}, X::AM, theta::AV)
+function loglik(y, X, theta)
     n,k = checksizes(y,X,theta)
     ff(z) = logcdf(Logistic(), z)
 
@@ -114,7 +109,7 @@ function loglik(y::AV{Int}, X::AM, theta::AV)
 end
 
 # ╔═╡ 90b963b0-5e9c-11eb-1d75-25729dfb57ee
-function dloglik!(grad::AV, y::AV{Int}, X::AM, theta::AV)
+function dloglik!(grad, y, X, theta)
     
 	n,k = checksizes(y,X,theta)    
     k == length(grad) || throw(DimensionMismatch())
@@ -138,7 +133,7 @@ begin
 end
 
 # ╔═╡ 90c65c02-5e9c-11eb-032a-7d600b60b9c4
-function informationmatrix(y::AV{Int}, X::AM, theta::AV)
+function informationmatrix(y, X, theta)
 
 	n,k = checksizes(y,X,theta)    
     infomatrix = zeros(k,k)
@@ -182,7 +177,6 @@ end
 # ╔═╡ Cell order:
 # ╟─0ece0030-5e9d-11eb-0092-254fc6e72e83
 # ╠═8595f030-5e9b-11eb-3bd7-ef8250cd1fab
-# ╠═75c48830-5e9e-11eb-1ec1-f3a083780a1b
 # ╠═b9c02010-5e9b-11eb-1e5d-9358c778cbba
 # ╠═b9a85250-5e9b-11eb-1787-6b671b235984
 # ╠═b976e210-5e9b-11eb-0b18-e95537e1d64f
