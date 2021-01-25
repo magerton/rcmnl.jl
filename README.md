@@ -20,7 +20,7 @@ Contains 2 examples:
 
 2. Random Coef multinomial logit w/ 3 choices for balanced panel
     - Shows off package development / [Revise.jl](https://github.com/timholy/Revise.jl)-based workflow
-    - Better to edit with an IDE like VS Code or Atom
+    - Better to edit with an IDE like **[VS Code](https://www.julia-vscode.org/)** ~~or Atom~~
     - Might be cool to parallelize
     - To work on package
 
