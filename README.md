@@ -53,3 +53,29 @@ Contains 2 examples:
         ]add DifferentialEquations Plots
         ```
     - Open [ivp-plotting-example.jl](./ivp-plotting-example.jl)
+
+4. Using [`JuMP`](https://github.com/jump-dev/JuMP.jl) to write down a constrained optimization problem
+
+    - Uses a Jupyter notebook (can't use JuMP in Pluto yet)
+    - JuMP is great for constrained optimization, can hook in to a BUNCH of solvers (Knitro, Ipopt, Gurobi, etc)
+    - Uses automatic differentiation
+    - Can use for BLP/Rust models with MPEC approach (ask Mark if you need example)
+    - To run, switch to this directory, install IJulia, open up a jupyterlab
+    
+        ```julia
+        ]add JuMP Ipopt SparseArrays
+        ]add IJulia
+        
+        # might need to build IJulia
+        ]build IJulia
+        using IJulia
+        jupyterlab(;dir="~/.julia/dev/rcmnl")
+        ```
+    - Making a jupyterlab desktop shortcut in Windows
+        - [see blog post](https://medium.com/@kostal91/create-a-desktop-shortcut-for-jupyterlab-on-windows-9fcabcfa0d3f)
+        - Right-click on the desktop and choose New -> Shortcut
+        - Target: `%windir%\System32\cmd.exe "/K" C:\Users\%username%\.julia\conda\3\Scripts\activate.bat C:\Users\%username%\.julia\conda\3 & jupyter lab && exit`
+        - Icon: `C:\Users\%username%\.julia\conda\3\Menu\jupyter.ico`
+        - Start in: The directory where you put your ARE 254 stuff
+    - To start Jupyterlab in its own window, add the line below to `%USERPROFILE%/.jupyter/jupyter_notebook_config.py`. See [blog post](http://christopherroach.com/articles/jupyterlab-desktop-app/)
+
