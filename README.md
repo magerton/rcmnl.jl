@@ -19,19 +19,24 @@ Contains 2 examples:
         + open [logit-example.jl](./logit-example.jl) in Pluto
 
 2. Random Coef multinomial logit w/ 3 choices for balanced panel
-    - Shows off package development / Revise.jl-based workflow
+    - Shows off package development / [Revise.jl](https://github.com/timholy/Revise.jl)-based workflow
     - Better to edit with an IDE like VS Code or Atom
-    - Would be cool to parallelize
+    - Might be cool to parallelize
     - To work on package
 
         + install Julia
-        + clone package, switch to new pkg dir, and instantiate
 
             ```julia
+            # clone package to your development directory
+            # (intead of just `]add` ing the package)
+            ]dev https://github.com/magerton/rcmnl.jl
             
-            ```
-        + run tests for demo
+            # activate package (like a virtual environment)
+            ]activate rcmnl
 
-            ```julia
+            # install required packages (in `Project.toml`)
+            ]instantiate
+
+            # run unit tests for rcmnl package
             ]test rcmnl
             ```
