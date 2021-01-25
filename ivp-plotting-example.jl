@@ -136,8 +136,8 @@ end
 
 # ╔═╡ faaf5290-5ea9-11eb-3761-7db74d6930e8
 plot(
-    plot(0:0.1:tmax, t -> sol(t)[1], title="\$k(t)\$", legend=:none),
-    plot(0:0.1:tmax, t -> sol(t)[2], title="\$i(t)\$", legend=:none),
+    plot(TT, t -> sol(t)[1], title="\$k(t)\$", legend=:none),
+    plot(TT, t -> sol(t)[2], title="\$i(t)\$", legend=:none),
     plot(
         sol, 
         labels=["\$k(t)\$" "\$i(t)\$"], # NOTE: labels are row matrix!
