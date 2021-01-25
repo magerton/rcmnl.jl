@@ -40,3 +40,15 @@ Contains 2 examples:
             # run unit tests for rcmnl package
             ]test rcmnl
             ```
+
+3. Solving and Plotting an IVP
+
+    - Shows VERY basics of
+        + solving IVP using `DifferentialEquations.jl`
+        + Plotting the IVP and the phase plane with `Plots.jl`
+    - Will require you to install these two packages, which take a while to install AND precompile the first time you use them.
+
+        ```julia
+        ]add DifferentialEquations Plots
+        ```
+    - Open `[ivp-plotting-example.jl](./ivp-plotting-example.jl)`
